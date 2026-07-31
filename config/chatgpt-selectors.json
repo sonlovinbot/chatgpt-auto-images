@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "target": "chatgpt.com",
+  "selectors": {
+    "composer": "#prompt-textarea, [contenteditable='true'][data-virtualkeyboard='true']",
+    "fileInput": "#upload-files, input[data-testid='upload-photos-input'], input[type='file']",
+    "attachmentButton": "button[data-testid='composer-plus-btn'], button[aria-label*='Attach'], button[aria-label*='Upload'], button[aria-label*='Add photos']",
+    "sendButton": "button[data-testid='send-button'], button[aria-label*='Send']",
+    "stopButton": "button[data-testid='stop-button'], button[aria-label*='Stop']",
+    "conversationArticle": "main article, main [data-message-author-role]",
+    "conversationTurn": "main section[data-testid^='conversation-turn-']",
+    "assistantMessage": "[data-message-author-role='assistant']",
+    "userMessage": "[data-message-author-role='user']",
+    "generatedImage": "main img[alt^='Generated image:']",
+    "image": "img",
+    "attachment": "[data-testid^='file-thumbnail'], [data-testid*='attachment'], [data-testid*='file-preview'], [class*='attachment'], [class*='file-preview']",
+    "uploadBusy": "[aria-busy='true'], [data-state='loading']"
+  },
+  "labels": {
+    "login": ["Log in", "Sign up"],
+    "verification": ["Verify you are human", "Checking your browser"],
+    "usageLimit": ["usage limit", "try again later", "You've reached"],
+    "addFiles": ["Add photos & files", "Upload from computer", "Attach files"]
+  }
+}

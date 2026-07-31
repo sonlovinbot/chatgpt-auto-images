@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Auto ChatGPT Images",
+  "version": "0.6.7",
+  "description": "Runs durable image-generation batches through your logged-in ChatGPT tab.",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "alarms",
+    "downloads",
+    "scripting",
+    "sidePanel",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Auto ChatGPT Images"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content/chatgpt.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": ["content/vox-bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["config/chatgpt-selectors.json"],
+      "matches": ["https://chatgpt.com/*"]
+    }
+  ]
+}
