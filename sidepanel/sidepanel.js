@@ -50,7 +50,7 @@ const DEFAULT_SETTINGS = {
   delaySeconds: 2,
   autoDownload: true,
   downloadMode: "auto",
-  downloadFolder: "Auto ChatGPT Images",
+  downloadFolder: "VOX Image Runner",
 };
 
 let selectorConfigPromise;

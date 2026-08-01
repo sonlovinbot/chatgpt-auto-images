@@ -1,4 +1,4 @@
-# Auto ChatGPT Images
+# VOX Image Runner
 
 A Manifest V3 Chrome extension that executes image-generation jobs through the
 user's logged-in ChatGPT tab.
@@ -102,7 +102,7 @@ The VOX endpoints described in `docs/product-brief.md` must be available before 
 3. Click **Load unpacked**.
 4. Select this repository folder.
 5. Click the extension icon to open the side panel.
-6. After a code update, click **Reload** on the Auto ChatGPT Images card.
+6. After a code update, click **Reload** on the VOX Image Runner card.
 7. Open an existing `chatgpt.com` tab, then close and reopen the side panel.
 
 ## Standalone usage

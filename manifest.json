@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Auto ChatGPT Images",
-  "version": "0.6.7",
-  "description": "Runs durable image-generation batches through your logged-in ChatGPT tab.",
+  "name": "VOX Image Runner",
+  "version": "0.6.8",
+  "description": "Runs queued image-generation tasks through your signed-in ChatGPT tab.",
   "minimum_chrome_version": "116",
   "permissions": [
     "alarms",
@@ -22,7 +22,19 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Open Auto ChatGPT Images"
+    "default_title": "Open VOX Image Runner",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
   },
   "side_panel": {
     "default_path": "sidepanel/sidepanel.html"
