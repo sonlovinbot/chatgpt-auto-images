@@ -1,8 +1,8 @@
-# VOX Image Runner Privacy Policy
+# ChatGPT Image Automation Privacy Policy
 
 Last updated: August 1, 2026
 
-VOX Image Runner processes the prompts, reference images, generated image bytes,
+ChatGPT Image Automation processes the prompts, reference images, generated image bytes,
 and task metadata that a user chooses to submit through the extension. It uses
 this data solely to operate the user-facing image-generation workflow.
 

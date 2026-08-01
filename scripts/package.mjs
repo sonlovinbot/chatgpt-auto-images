@@ -10,9 +10,9 @@ const manifest = JSON.parse(
     "utf8",
   ),
 );
-const stage = path.join(root, ".package", "vox-image-runner");
+const stage = path.join(root, ".package", "chatgpt-image-automation");
 const outputDir = path.join(root, "dist");
-const output = path.join(outputDir, `vox-image-runner-${manifest.version}.zip`);
+const output = path.join(outputDir, `chatgpt-image-automation-${manifest.version}.zip`);
 const include = [
   "manifest.json",
   "background.js",
