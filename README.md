@@ -1,144 +1,140 @@
 # ChatGPT Image Automation
 
-A Manifest V3 Chrome extension that executes image-generation jobs through the
-user's logged-in ChatGPT tab.
+Extension Chrome giúp tạo nhiều ảnh bằng ChatGPT theo hàng chờ. Bạn có thể nhập nhiều prompt, thêm ảnh tham chiếu theo từng prompt, theo dõi tiến trình và tự lưu ảnh hoàn thành về máy.
 
-## Current status — v0.6.5
+> Extension sử dụng tab ChatGPT mà bạn đã đăng nhập. Bạn luôn là người bắt đầu tác vụ; extension không vượt qua đăng nhập, xác minh, giới hạn sử dụng hay các quy tắc an toàn của ChatGPT.
 
-The extension now supports a standalone ChatGPT workflow without VOX:
+## Chức năng chính
 
-- Four side-panel tabs: **Create**, **Queue**, **Logs**, and **Settings**.
-- Bulk prompt parsing. A blank line separates multi-line prompts; without blank
-  lines, each non-empty line is a prompt.
-- Prompt lines containing an editable prompt and zero to five ordered reference
-  images. Compact layered thumbnails provide move-left, move-right, remove, and
-  add-more controls without making the side panel excessively wide.
-- Bulk prompts automatically create and fill prompt lines from top to bottom.
-  Selecting multiple main images maps one image to each line; each line can
-  then receive additional reference images through its own **+ Ref** control.
-- Sequential ChatGPT execution with pause, resume, stop, retry, and queue
-  prioritization. The active task and newest queued tasks stay above completed
-  work, while failed and canceled tasks move to the bottom.
-- Draft references, queued references, queue metadata, results, and diagnostic
-  sessions survive reopening the side panel.
-- Reference bytes are decoded locally in ChatGPT's MAIN world rather than
-  fetched through the page CSP. Images are then sent one at a time through the
-  composer-owned `#upload-files` input. Every image must produce a visible
-  ready signal before its prompt can be submitted.
-- A baseline is recorded before every submission. ChatGPT images are identified
-  by their stable Estuary file ID rather than expiring `ts`/`sig` URL
-  parameters, and candidates must belong to an assistant turn created after
-  submission. A fully loaded candidate is accepted after remaining unchanged
-  for several scans even if ChatGPT's global Stop button remains visible. The
-  scanner then retrieves only the stable authenticated result bytes.
-- Completed images can be downloaded manually or automatically into a
-  configured Downloads subfolder. Like the Isfahan reference, a service-worker
-  download manager reinforces the requested path through
-  `onDeterminingFilename`; the runner waits for Chrome to confirm completion and
-  verifies the actual folder suffix.
-- Every generation has an expandable session log and its own **Copy** button.
-- If the side panel reloads after a prompt was submitted, recovery resumes the
-  scanner in the original ChatGPT conversation and does not submit the prompt
-  again.
-- If the ChatGPT DOM remains unchanged for 60 scans, the runner opens the saved
-  conversation URL in one fresh tab and moves the scanner there without
-  submitting again. Each task performs this automatic tab recovery at most
-  once.
+- Tạo ảnh hàng loạt từ danh sách prompt.
+- Gắn tối đa năm ảnh tham chiếu cho mỗi prompt và giữ đúng thứ tự ảnh.
+- Chạy lần lượt từng tác vụ; hỗ trợ tạm dừng, tiếp tục, thử lại và dừng.
+- Theo dõi ảnh mới tạo bởi ChatGPT, tránh lấy nhầm ảnh cũ trong cuộc trò chuyện.
+- Tự tải ảnh về máy hoặc tải thủ công từng ảnh.
+- Lưu hàng chờ, log và trạng thái để có thể tiếp tục sau khi đóng side panel hoặc reload extension.
+- Có thể nhận tác vụ từ ứng dụng cục bộ tương thích, nhưng vẫn dùng cùng một hàng chờ và giao diện như khi tạo thủ công.
 
-The local VOX bridge now reuses that same proven side-panel executor:
+## Cài đặt bằng Chrome Developer mode
 
-- VOX checks that the extension is installed before creating a batch.
-- A click-time preflight opens the side panel before VOX performs asynchronous
-  batch work, preserving Chrome's required user gesture.
-- Reloading the unpacked extension automatically re-injects the VOX bridge into
-  already open local VOX tabs and replaces stale bridge listeners whose
-  `chrome.runtime` context was invalidated.
-- `START_CHATGPT_BATCH` opens a new ChatGPT tab by default and
-  imports each non-terminal VOX task into the durable extension queue exactly
-  once.
-- VOX can choose automatic execution or manual intake. Manual intake resets the
-  previous VOX workspace, fills the **Create** prompt lines and ordered
-  references, preserves task/beat identity, and waits for the user to click
-  **Add and run**.
-- VOX task order and the order of every task's references are preserved.
-- Reconnecting an unfinished VOX batch requeues matching local failed or
-  canceled items when VOX still has no completed result. Existing task IDs are
-  reused, so missing beats resume without creating duplicate remote tasks.
-- Failed tasks show a prominent recovery banner with a shortcut back to VOX.
-  Every explicit retry is tagged to open a fresh ChatGPT New Chat immediately
-  before submission, so a stuck older ChatGPT tab is never reused.
-- Each task is claimed from VOX before ChatGPT automation begins. A claim for a
-  different task is rejected instead of silently mixing beats.
-- Progress and waiting heartbeats are returned to VOX while ChatGPT is working.
-- Generated bytes are stored locally before result delivery. The extension
-  marks a task completed only after VOX confirms the multipart result save.
-- If result delivery is interrupted, retry sends the already collected bytes
-  again through the idempotent VOX endpoint and does not submit ChatGPT twice.
-- The legacy background/content-script executor is not run in parallel for
-  side-panel-owned VOX batches.
+Dùng cách này khi bạn có mã nguồn extension và muốn chạy hoặc kiểm thử phiên bản đang phát triển.
 
-The repository also retains the VOX integration foundation:
+### 1. Chuẩn bị thư mục extension
 
-- Side-panel-owned automation session using MAIN-world script injection,
-  following the proven execution architecture of the read-only Isfahan Auto
-  Flow reference extension.
-- Versioned `vox-chatgpt/1` application adapter.
-- Durable runtime checkpoints in `chrome.storage.local`.
-- Sequential task state machine.
-- Dedicated ChatGPT tab/conversation setup per batch.
-- Ordered reference upload and visible upload verification.
-- Pre-submission message/image baseline.
-- Exactly-once submission guard and ambiguity detection.
-- New assistant-image detection and highest-resolution selection.
-- Image-byte return to VOX with checksum and idempotency metadata.
-- Fake ChatGPT result-detection tests.
+Bạn cần có thư mục auto-chatgpt-images chứa file manifest.json ở cấp gốc. Nếu bạn tải source dưới dạng ZIP, hãy giải nén ZIP trước; **không** chọn file ZIP trong Chrome.
 
-The VOX endpoints described in `docs/product-brief.md` must be available before an end-to-end batch can run.
+Ví dụ, thư mục cần chọn là:
 
-## Install for development
+~~~
+/Users/danghuuson/OPEN SOURCE VIBE CODE/extensions/auto-chatgpt-images
+~~~
 
-1. Open `chrome://extensions`.
-2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select this repository folder.
-5. Click the extension icon to open the side panel.
-6. After a code update, click **Reload** on the ChatGPT Image Automation card.
-7. Open an existing `chatgpt.com` tab, then close and reopen the side panel.
+### 2. Mở trang quản lý extension
 
-## Standalone usage
+1. Mở Chrome.
+2. Nhập địa chỉ sau vào thanh địa chỉ rồi nhấn Enter:
 
-1. Open ChatGPT and the extension side panel.
-2. In **Create**, paste one or more prompts.
-3. Optionally select multiple main images. Image 1 maps to line 1, image 2 to
-   line 2, and so on.
-4. Add up to five ordered references to any line with **+ Ref**, then check or
-   edit the prompt beside that stack. The bulk prompt field creates and fills
-   these lines automatically from top to bottom.
-5. Click **Add to queue** or **Add and run**.
-6. Use **Queue** to pause, resume, stop, retry, or download individual results.
-   Active/new work is shown first and failed/old work is shown last.
-7. Use **Logs** to expand a generation session or copy its complete diagnostics
-   in one click.
-8. Use **Settings** to configure timeout, delay, automatic download behavior,
-   and the destination subfolder. **Auto save** is the reliable folder mode;
-   Chrome's **Save As** dialog always lets the user override the folder.
+   ~~~
+   chrome://extensions
+   ~~~
 
-For local VOX, reload both the extension and the VOX page, then click
-**Generate with ChatGPT** in the storyboard. VOX first verifies the bridge,
-creates the batch, opens the extension side panel and ChatGPT, and sends the
-batch into the same sequential queue used by standalone mode.
+3. Bật công tắc **Developer mode** ở góc trên bên phải.
 
-The extension automatically uses `http://127.0.0.1:4174` for local VOX development. No API token is required locally. The manual URL, token, and batch-ID fields are recovery controls for remote or disconnected setups.
+### 3. Nạp extension
 
-## Development
+1. Bấm **Load unpacked**.
+2. Chọn thư mục auto-chatgpt-images đã chuẩn bị ở bước 1.
+3. Chrome sẽ hiện thẻ **ChatGPT Image Automation** trong danh sách extension.
+4. Bật công tắc ở góc thẻ nếu extension đang tắt.
 
-```bash
-npm test
+Nếu Chrome báo không tải được extension, kiểm tra lại rằng bạn đã chọn đúng thư mục có file manifest.json, không phải thư mục cha hoặc file ZIP.
+
+### 4. Mở extension
+
+1. Mở https://chatgpt.com và đăng nhập tài khoản ChatGPT của bạn.
+2. Bấm biểu tượng mảnh ghép **Extensions** trên thanh công cụ Chrome.
+3. Chọn **ChatGPT Image Automation**. Bạn có thể bấm biểu tượng ghim để luôn thấy extension trên thanh công cụ.
+4. Side panel sẽ mở ở cạnh phải của trang ChatGPT.
+
+Nếu side panel hiển thị nút **Chuyển đến ChatGPT**, hãy bấm nút đó để mở hoặc chuyển sang tab ChatGPT trước khi bắt đầu.
+
+## Cập nhật sau khi sửa code
+
+Mỗi khi mã nguồn thay đổi:
+
+1. Mở lại chrome://extensions.
+2. Tìm thẻ **ChatGPT Image Automation**.
+3. Bấm nút **Reload** (biểu tượng mũi tên vòng tròn).
+4. Quay lại tab ChatGPT và đóng/mở lại side panel.
+
+Nếu bạn thay đổi manifest.json, hãy luôn Reload extension trước khi kiểm tra.
+
+## Tạo ảnh thủ công
+
+1. Mở ChatGPT và side panel extension.
+2. Vào tab **Tạo ảnh hàng loạt**.
+3. Dán prompt vào ô **Prompt hàng loạt**:
+   - Mỗi dòng là một prompt.
+   - Nếu một prompt có nhiều dòng, ngăn các prompt bằng một dòng trống.
+4. Extension tạo các line ở bên dưới theo đúng thứ tự prompt.
+5. Chọn ảnh chính nếu muốn ghép một ảnh cho mỗi line, hoặc dùng nút **+ Ref** để thêm ảnh tham chiếu cho từng line.
+6. Chọn tỷ lệ ảnh, tên file và kiểm tra lại prompt.
+7. Bấm **Thêm vào hàng chờ** để xem lại trước, hoặc **Thêm và chạy** để bắt đầu.
+
+Mỗi tác vụ chỉ gửi prompt một lần. Nếu một ảnh tham chiếu không tải được, tác vụ sẽ dừng và báo lỗi thay vì bỏ qua ảnh đó.
+
+## Quản lý hàng chờ
+
+Vào tab **Hàng chờ** để:
+
+- xem tác vụ đang chạy, đang chờ, đã hoàn thành hoặc lỗi;
+- tạm dừng và tiếp tục toàn bộ hàng chờ;
+- dừng tác vụ hiện tại;
+- thử lại tác vụ lỗi;
+- tải từng ảnh đã hoàn thành.
+
+Tác vụ mới và tác vụ đang chạy được ưu tiên hiển thị phía trên. Tác vụ lỗi, đã hủy hoặc cũ được đưa xuống dưới để hàng chờ dễ theo dõi.
+
+## Lưu ảnh về máy
+
+Trong tab **Cài đặt**, bạn có thể bật tự tải ảnh và đặt thư mục con trong Downloads, ví dụ:
+
+~~~
+ChatGPT Image Automation
+~~~
+
+Chế độ tự tải là cách đáng tin cậy nhất để lưu vào thư mục đã chọn. Nếu Chrome hiển thị hộp thoại **Save As**, bạn có thể đổi tên hoặc chọn thư mục khác; Chrome có quyền quyết định cuối cùng về vị trí lưu file.
+
+Nếu có extension khác cũng đổi tên file tải về, Chrome có thể báo xung đột tên file. Khi đó, tắt extension xung đột trong lúc chạy hoặc dùng tên file mặc định.
+
+## Log và xử lý lỗi
+
+Vào tab **Nhật ký** để xem log chi tiết của từng lần tạo ảnh. Mỗi phiên có nút **Copy** để sao chép toàn bộ log khi cần gửi hỗ trợ.
+
+| Hiện tượng | Cách xử lý |
+| --- | --- |
+| Extension không hoạt động ngoài ChatGPT | Mở chatgpt.com, đăng nhập rồi mở lại side panel. |
+| Prompt đã nhập nhưng không gửi | Kiểm tra ChatGPT không bị chặn bởi login, xác minh hoặc giới hạn sử dụng. |
+| Ảnh tham chiếu không tải được | Chọn lại file ảnh; dùng PNG, JPG hoặc WEBP hợp lệ. |
+| Ảnh tạo xong nhưng hàng chờ chưa cập nhật | Chờ vài giây để extension xác nhận ảnh đã tải xong; mở Nhật ký nếu cần kiểm tra. |
+| Extension vừa Reload | Mở lại side panel. Hàng chờ sẽ cố gắng khôi phục mà không gửi lại prompt. |
+| Lỗi tải file hoặc tên file | Kiểm tra extension khác có can thiệp Downloads; tắt extension xung đột khi kiểm tra. |
+
+## Phát triển và đóng gói
+
+~~~
 npm run check
-```
+npm test
+npm run package
+~~~
 
-DOM selectors and visible labels live in `config/chatgpt-selectors.json`. Automation code should call semantic page operations rather than embed selectors in orchestration logic.
+Gói phát hành được tạo trong thư mục dist/. Quy trình đầy đủ để đưa extension lên Chrome Web Store nằm tại [docs/chrome-web-store-release.md](docs/chrome-web-store-release.md).
 
-## Safety
+## Tài liệu liên quan
 
-The extension does not bypass ChatGPT login, verification, safety, or usage limits. Those states are reported as explicit errors requiring user action.
+- [Product brief](docs/product-brief.md)
+- [Privacy Policy](docs/privacy-policy.md)
+- [Quy trình phát hành Chrome Web Store](docs/chrome-web-store-release.md)
+
+## Lưu ý an toàn
+
+Extension không cố vượt qua ChatGPT login, CAPTCHA, xác minh tài khoản, giới hạn sử dụng hay các giới hạn an toàn. Khi ChatGPT yêu cầu một thao tác như vậy, hãy thực hiện trực tiếp trên trang ChatGPT rồi tiếp tục hàng chờ.

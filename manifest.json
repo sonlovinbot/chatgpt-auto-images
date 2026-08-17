@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT Image Automation",
-  "version": "0.6.9",
-  "description": "Runs queued image-generation tasks through your signed-in ChatGPT tab.",
+  "version": "0.6.10",
+  "description": "Create, organize, and save ChatGPT images with prompts and reference images.",
   "minimum_chrome_version": "116",
   "permissions": [
     "alarms",
